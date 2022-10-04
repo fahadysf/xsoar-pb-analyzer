@@ -59,44 +59,45 @@ def analyze_task_types(tasks: str):
         tasks (_type_): _description_
     """
     tasks_by_type = dict()
-    tasks_by_type['regular_tasks_breakdown'] = dict()
-    tasks_by_type['regular_tasks_breakdown']['commands'] = {
-        "count": 0,
-        "script_set": list()
-    }
-    tasks_by_type['regular_tasks_breakdown']['automations'] = dict()
-    tasks_by_type['regular_tasks_breakdown']['automations'] = {
-        "count": 0,
-        "script_set": list()
-    }
+
     for k in tasks.keys():
         t = tasks[k]
         if not t['type'] in tasks_by_type.keys():
-            tasks_by_type[t['type']] = 1
+            tasks_by_type[t['type']] = {"count": 1}
+            if t['type'] in ['condition', 'regular']:
+                tasks_by_type[t['type']]["breakdown"] = {
+                    "commands": {
+                        "count": 0,
+                        "script_set": set()
+                    },
+                    "automations": {
+                        "count": 0,
+                        "script_set": set()
+                    },
+                }
         else:
-            tasks_by_type[t['type']] += 1
-
-        # Do some analysis on regular tasks
-        if t['type'] == 'regular':
+            tasks_by_type[t['type']]['count'] += 1
+        if t['type'] in ['condition', 'regular']:
             if t['task']['iscommand']:
-                tasks_by_type['regular_tasks_breakdown']['commands']['count'] += 1
+                tasks_by_type[t['type']]['breakdown']['commands']['count'] += 1
                 if 'script' in t['task'].keys():
-                    tasks_by_type['regular_tasks_breakdown']['commands']['script_set'].append(
+                    tasks_by_type[t['type']]['breakdown']['commands']['script_set'].add(
                         t['task']['script']
                     )
             else:
-                tasks_by_type['regular_tasks_breakdown']['automations']['count'] += 1
+                tasks_by_type[t['type']
+                              ]['breakdown']['automations']['count'] += 1
                 if 'script' in t['task'].keys():
-                    tasks_by_type['regular_tasks_breakdown']['automations']['script_set'].append(
+                    tasks_by_type[t['type']]['breakdown']['automations']['script_set'].add(
                         t['task']['script']
                     )
-    # Remove duplicates from script_sets
-    css = tasks_by_type['regular_tasks_breakdown']['commands']["script_set"]
-    tasks_by_type['regular_tasks_breakdown']['commands']["script_set"] = list(
-        set(css))
-    oss = tasks_by_type['regular_tasks_breakdown']['automations']["script_set"]
-    tasks_by_type['regular_tasks_breakdown']['automations']["script_set"] = list(
-        set(oss))
+
+    for key in ['condition', 'regular']:
+        css = tasks_by_type[key]['breakdown']['commands']['script_set']
+        tasks_by_type[key]['breakdown']['commands']['script_set'] = list(css)
+        oss = tasks_by_type[key]['breakdown']['automations']['script_set']
+        tasks_by_type[key]['breakdown']['automations']['script_set'] = list(
+            oss)
     return tasks_by_type
 
 
