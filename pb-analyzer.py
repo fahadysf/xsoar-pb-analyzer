@@ -75,6 +75,10 @@ def analyze_task_types(tasks: str):
                         "script_set": set()
                     },
                 }
+            elif t['type'] == 'playbook':
+                tasks_by_type[t['type']]["breakdown"] = {
+                    "playbook_list": list()
+                }
         else:
             tasks_by_type[t['type']]['count'] += 1
         if t['type'] in ['condition', 'regular']:
@@ -91,6 +95,9 @@ def analyze_task_types(tasks: str):
                     tasks_by_type[t['type']]['breakdown']['automations']['script_set'].add(
                         t['task']['script']
                     )
+        elif t['type'] == 'playbook':
+            tasks_by_type[t['type']]['breakdown']['playbook_list'].append(
+                t['task']['playbookId'])
 
     for key in ['condition', 'regular']:
         css = tasks_by_type[key]['breakdown']['commands']['script_set']
@@ -98,6 +105,7 @@ def analyze_task_types(tasks: str):
         oss = tasks_by_type[key]['breakdown']['automations']['script_set']
         tasks_by_type[key]['breakdown']['automations']['script_set'] = list(
             oss)
+
     return tasks_by_type
 
 
